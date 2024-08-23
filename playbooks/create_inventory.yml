@@ -46,3 +46,7 @@
     - name: Display wait result
       debug:
         var: wait_result
+
+    - name: Display updated inventory
+      debug:
+        msg: "Updated inventory: {{ lookup('ansible.controller.controller_api', 'inventories/' + inventory_update_result.id + '/hosts') }}"
