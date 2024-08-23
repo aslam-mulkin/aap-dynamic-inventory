@@ -1,52 +1,22 @@
----
-- name: Update Dynamic Inventory
-  hosts: localhost
-  connection: local
-  gather_facts: no
-  
-  vars:
-    inventory_data: "{{ api_inventory_data | default({}) }}"
+#!/usr/bin/env python3
+import json
+import sys
+import os
+from jinja2 import Template
 
-  tasks:
-    - name: Display inventory data
-      debug:
-        var: inventory_data
+def get_inventory():
+    inventory_data_str = os.environ.get('INVENTORY_DATA', '{}')
+    
+    # Handle potential Jinja2 template string
+    if '{{' in inventory_data_str and '}}' in inventory_data_str:
+        inventory_data_str = Template(inventory_data_str).render(source_vars={})
+    
+    try:
+        return json.loads(inventory_data_str)
+    except json.JSONDecodeError:
+        print(f"Error decoding JSON: {inventory_data_str}", file=sys.stderr)
+        return {"all": {"children": {}}}
 
-    - name: Update inventory source configuration
-      ansible.controller.inventory_source:
-        name: "Inventory from Remedy API"
-        inventory: "Dynamic Inventory from Remedy"
-        organization: "Default"
-        source: "scm"
-        source_project: "Hardening"  # Replace with your project name
-        source_path: "inventories/remedy_inventory.py"
-        update_on_launch: true
-        overwrite: true
-        source_vars:
-          INVENTORY_DATA: "{{ inventory_data | to_json }}"
-      register: inventory_source_update
-
-    - name: Display inventory source update result
-      debug:
-        var: inventory_source_update
-
-    - name: Trigger inventory update
-      ansible.controller.inventory_source_update:
-        name: "Inventory from Remedy API"
-        inventory: "Dynamic Inventory from Remedy"
-        organization: "Default"
-      register: inventory_update_result
-
-    - name: Wait for inventory update
-      ansible.controller.job_wait:
-        job_id: "{{ inventory_update_result.id }}"
-      register: wait_result
-      when: inventory_update_result is success
-
-    - name: Display wait result
-      debug:
-        var: wait_result
-
-    - name: Display updated inventory
-      debug:
-        msg: "Updated inventory: {{ lookup('ansible.controller.controller_api', 'inventories/' + inventory_update_result.id + '/hosts') }}"
+if __name__ == "__main__":
+    inventory = get_inventory()
+    print(json.dumps(inventory))
