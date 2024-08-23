@@ -1,7 +1,6 @@
 ---
 - name: Update Dynamic Inventory
   hosts: localhost
-  connection: local
   gather_facts: no
   
   vars:
