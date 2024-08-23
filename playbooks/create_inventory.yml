@@ -1,0 +1,22 @@
+---
+- name: Update Dynamic Inventory
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  
+  tasks:
+    - name: Trigger inventory update
+      ansible.controller.inventory_source_update:
+        name: "Remedy API Source"
+        inventory: "Dynamic Inventory from Remedy"
+        organization: "Default"  # Replace with your organization name if different
+      register: inventory_update_result
+    
+    - name: Wait for inventory update
+      ansible.controller.job_wait:
+        job_id: "{{ inventory_update_result.id }}"
+      register: wait_result
+    
+    - name: Display updated inventory
+      debug:
+        var: groups
