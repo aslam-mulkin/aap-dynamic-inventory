@@ -4,10 +4,13 @@ import sys
 import os
 
 def get_inventory():
-    # In AAP, this data will be provided by the workflow
-    inventory_data = json.loads(os.environ.get('INVENTORY_DATA', '{}'))
-    
-    # Process the inventory data
+    inventory_data_str = os.environ.get('INVENTORY_DATA', '{}')
+    try:
+        inventory_data = json.loads(inventory_data_str)
+    except json.JSONDecodeError:
+        print(f"Error decoding JSON: {inventory_data_str}", file=sys.stderr)
+        return {}
+
     processed_inventory = {
         "_meta": {"hostvars": {}},
         "all": {"children": []}

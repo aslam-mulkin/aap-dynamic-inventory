@@ -8,16 +8,17 @@
     inventory_data: "{{ api_inventory_data | default({}) }}"
 
   tasks:
-    - name: Set inventory data as an environment variable
-      set_fact:
-        inventory_env: "INVENTORY_DATA='{{ inventory_data | to_json }}'"
+    - name: Display inventory data
+      debug:
+        var: inventory_data
 
     - name: Trigger inventory update
       ansible.controller.inventory_source_update:
         name: "Remedy API Source"
         inventory: "Dynamic Inventory from Remedy"
         organization: "Default"  # Replace with your organization name if different
-      environment: "{{ inventory_env }}"
+        source_vars:
+          INVENTORY_DATA: "{{ inventory_data | to_json }}"
       register: inventory_update_result
 
     - name: Wait for inventory update
