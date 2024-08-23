@@ -11,18 +11,7 @@ def get_inventory():
         print(f"Error decoding JSON: {inventory_data_str}", file=sys.stderr)
         return {}
 
-    processed_inventory = {
-        "_meta": {"hostvars": {}},
-        "all": {"children": []}
-    }
-    
-    for group, group_data in inventory_data.get('all', {}).get('children', {}).items():
-        processed_inventory[group] = {"hosts": group_data.get('hosts', [])}
-        processed_inventory["all"]["children"].append(group)
-        for host in group_data.get('hosts', []):
-            processed_inventory["_meta"]["hostvars"][host] = {"group": group}
-    
-    return processed_inventory
+    return inventory_data  # Return the data as-is, it's already in the correct format
 
 if __name__ == "__main__":
     inventory = get_inventory()

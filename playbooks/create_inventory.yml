@@ -14,18 +14,23 @@
 
     - name: Trigger inventory update
       ansible.controller.inventory_source_update:
-        name: "Remedy API Source"
+        name: "Inventory from Remedy API"  # Make sure this matches exactly with your inventory source name
         inventory: "Dynamic Inventory from Remedy"
-        organization: "Default"  # Replace with your organization name if different
+        organization: "Default"
         source_vars:
           INVENTORY_DATA: "{{ inventory_data | to_json }}"
       register: inventory_update_result
+
+    - name: Display inventory update result
+      debug:
+        var: inventory_update_result
 
     - name: Wait for inventory update
       ansible.controller.job_wait:
         job_id: "{{ inventory_update_result.id }}"
       register: wait_result
+      when: inventory_update_result is success
 
-    - name: Display updated inventory
+    - name: Display wait result
       debug:
-        var: groups
+        var: wait_result
